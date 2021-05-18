@@ -3,6 +3,7 @@
     const router = express.Router();
 
     const UserController = require('../controllers/UserController');
+    const PerfilController = require('../controllers/PerfilController');
 
 // Rotas
     router.get(("/"),(req,res) =>{
