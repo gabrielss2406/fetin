@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
 const User = mongoose.model("usuarios");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const cpfVerify = require('cpf');
 
 module.exports = {
@@ -72,6 +72,38 @@ module.exports = {
     },
 
     async login(req,res) {
-        return res.json("login");
+        var {email, senha} = req.body
+    
+        var erros = []
+        
+        if(!email || typeof email == undefined || email == null){
+            erros.push({texto: "É necessario o email!"})}
+        if(!senha || typeof senha == undefined || senha == null || senha.length < 7){ 
+            erros.push({texto: "A senha é necessaria!"})}
+        
+        if(erros.length > 0){
+            res.json({erros: erros})
+        }
+        else{
+            User.findOne({email: email}).then((user)=>{
+                if (user){
+                    var senha_certa = user.senha
+
+                    bcrypt.compare(senha, senha_certa, (erro, result)=>{
+                        if (result == true) {
+                            return res.json({ "verificacao": "Aceita" });
+                        }
+                        else {
+                            erros.push({ texto: "Senha inválida!" })
+                            return res.json({"verificacao": "Negada", erros: erros})
+                        }
+                    })
+                }
+                else{
+                    erros.push({ texto: "Email inválido!" })
+                    return res.json({"verificacao": "Negada", erros: erros})
+                }
+            })
+        }
     }
 }
