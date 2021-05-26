@@ -1,15 +1,17 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
 const User = mongoose.model("usuarios");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const cpfVerify = require('cpf');
+
+require("dotenv-safe").config();
+const jwt = require('jsonwebtoken');
 
 module.exports = {
     async register(req,res) {
         var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2} = req.body;
         
         var erros = []
-
             if(!nome || typeof nome == undefined || nome == null)
                 erros.push({texto: "Nome inválido!"})
             if(!email || typeof email == undefined || email == null)
@@ -61,9 +63,9 @@ module.exports = {
                     }else{
                         newUser.senha = hash
                         newUser.save().then(()=>{
-                            return res.json({"acerto:":"certo"})
+                            return res.status(500).json({acerto:"certo"})
                         }).catch((err)=>{
-                            return res.json({"acerto:":"errado"})
+                            return res.status(500).json({acerto:"errado"})
                         })
                     }
                 })
@@ -91,11 +93,16 @@ module.exports = {
 
                     bcrypt.compare(senha, senha_certa, (erro, result)=>{
                         if (result == true) {
-                            return res.json({ "verificacao": "Aceita" });
+                            const id = user._id;
+                            const token = jwt.sign({ id }, process.env.SECRET, {
+                                expiresIn: 300 // expires in 5min
+                            });
+                            res.cookie("token", token)
+                            return res.json({ auth: true, token: token });
                         }
                         else {
                             erros.push({ texto: "Senha inválida!" })
-                            return res.json({"verificacao": "Negada", erros: erros})
+                            return res.status(500).json({"verificacao": "Negada", erros: erros})
                         }
                     })
                 }
@@ -105,5 +112,9 @@ module.exports = {
                 }
             })
         }
+    },
+    async logout(req,res){
+        res.clearCookie('token');
+        res.json({ auth: false, token: null });
     }
 }

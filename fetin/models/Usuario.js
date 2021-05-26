@@ -1,9 +1,14 @@
+const { ObjectID } = require('bson')
 const mongoose = require('mongoose')
 const Schema  = mongoose.Schema
 
 
 //modelo usuarios
 const Usuarios = new Schema({
+    /*id:{
+        type: ObjectID,
+        required: true
+    },*/
     nome: {
         type: String,
         require: true
