@@ -1,10 +1,27 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
 const User = mongoose.model("usuarios");
+const verifyJWT = require("../helpers/verifyJWT")
+
+require("dotenv-safe").config();
+const jwt = require('jsonwebtoken');
 
 module.exports = {
     async index(req,res) {
-        let id = req.query.id;
+        var id = "bal"
+
+        const token = req.cookies.token;
+        if(!req.query.id){
+            jwt.verify(token, process.env.SECRET, function(err, decoded) {
+                if (err) id = req.query.id
+                else id = decoded.id;
+            });
+            if(!id)
+                return res.json({erro: "Entre em um perfil de outra pessoa ou faça login para ver o seu."})
+        }
+        else{
+            id = req.query.id
+        }
 
         await User.findOne({_id: id}).select('nome e_trabalhador email telefone idade -_id').then((user)=>{
                 return res.json(user)
@@ -15,8 +32,7 @@ module.exports = {
     },
 
     async edit(req,res){
-        //let id = cookie(ainda nao fiz);
-        let id = "60ab9ec51458950d6029c9df";
+        var id = req.userId;
 
         var {nome,email,telefone,idade} = req.body;
 
