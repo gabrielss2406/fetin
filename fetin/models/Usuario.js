@@ -5,10 +5,6 @@ const Schema  = mongoose.Schema
 
 //modelo usuarios
 const Usuarios = new Schema({
-    /*id:{
-        type: ObjectID,
-        required: true
-    },*/
     nome: {
         type: String,
         require: true
@@ -42,8 +38,50 @@ const Usuarios = new Schema({
     senha: {
         type: String,
         require: true
-    }
+    },
 
+    endereco:{
+        pais:{
+            type: String,
+            require: true
+        },
+
+        estado:{
+            type: String,
+            require: true
+        },
+
+        cidade:{
+            type: String,
+            require: true
+        },
+
+        bairro:{
+            type: String
+        }
+    },
+    
+    trabalhador: {
+        tipo:{
+            type: String,
+            require: false
+        },
+    
+        avaliacao:{
+            type: Number,
+            require: false
+        },
+    
+        qnt_servicos: {
+            type: Number,
+            require: false
+        },
+    
+        descricao: {
+            type: String,
+            require: false
+        }
+    }
 })
 
 mongoose.model('usuarios', Usuarios)

@@ -7,7 +7,7 @@
 
     const db = require("./config/db");
     const router = require('./routes/routes');
-    
+
 // Configurações
     app.use(cors());
     // Mongoose
