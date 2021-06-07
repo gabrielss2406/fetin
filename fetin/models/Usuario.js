@@ -81,7 +81,15 @@ const Usuarios = new Schema({
             type: String,
             require: false
         }
-    }
+    },
+
+    resetPasswordToken:{
+        type: String
+    },
+    resetPasswordExpires:{
+        type: Date
+    } 
+
 })
 
 mongoose.model('usuarios', Usuarios)

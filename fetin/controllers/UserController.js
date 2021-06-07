@@ -3,6 +3,8 @@ require("../models/Usuario");
 const User = mongoose.model("usuarios");
 const bcrypt = require("bcryptjs");
 const cpfVerify = require('cpf');
+const nodemailer = require("nodemailer");
+var crypto = require('crypto');
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
@@ -140,5 +142,5 @@ module.exports = {
     async logout(req,res){
         res.clearCookie('token');
         res.json({ auth: false, token: null });
-    },
+    }
 }
