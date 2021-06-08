@@ -27,8 +27,8 @@ module.exports = {
                         var transporter = nodemailer.createTransport({
                             service: 'gmail',
                             auth: {
-                            user: 'myEmail',
-                            pass: 'myPass'
+                            user: 'xicop.guimaraes@gmail.com',
+                            pass: '1594875xico'
                             }
                         });
                         
@@ -71,5 +71,118 @@ module.exports = {
             return res.json({err})
         })
         
+    },
+
+    async nova_senha(req, res){
+        var erros = []
+        const {token} = req.query
+        const {nova_senha, nova_senha2} = req.body
+
+        if(!nova_senha || typeof nova_senha == undefined || nova_senha == null || nova_senha.length < 7)
+                erros.push({texto: "Nova senha inválida!"})
+        if(nova_senha != nova_senha2)
+                erros.push({texto: "As senhas são diferentes, tente novamente!"})
+
+        // Busca User com o Token em prazo
+        User = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).then((user)=>{
+            if(user!=null)
+                return user._id
+            else
+                return res.json("Erro!")
+        }).catch((err)=>{
+            return res.json({err})
+        })
+        
+        if(erros.length > 0){
+            res.json({erros: erros})
+        }
+        else{
+            bcrypt.genSalt(10, (erro,salt)=>{
+                bcrypt.hash(nova_senha, salt, (erro,hash)=>{
+                    if(erro){
+                        res.json("Erro")
+                    }else{
+                        // Definindo Filtro e o Update
+                        filter = {_id: User}
+                        update = {
+                            senha: hash
+                        }
+
+                        // Editando User
+                        let userUpdated = User.findOneAndUpdate(filter, update, {
+                            new: true
+                        }).then(()=>{
+                            res.json({acerto: "Nova senha cadastrada com sucesso!"})
+                        }).catch(()=>{
+                            erros.push({texto: "Email não cadastrado!"})
+                            res.json({erros: erros})
+                        })
+                    }
+                })
+            })
+        }
+    },
+
+    async editSenha(req,res){
+        var erros = []
+        const token = req.cookies.token;
+        const {antiga_senha, nova_senha, nova_senha2} = req.body
+
+        if(!antiga_senha || typeof antiga_senha == undefined || antiga_senha == null || antiga_senha.length < 7)
+                erros.push({texto: "Antiga senha inválida!"})
+        if(!nova_senha || typeof nova_senha == undefined || nova_senha == null || nova_senha.length < 7)
+                erros.push({texto: "Nova senha inválida!"})
+        if(nova_senha != nova_senha2)
+                erros.push({texto: "As senhas são diferentes, tente novamente!"})
+
+        jwt.verify(token, process.env.SECRET, function(err, decoded) {
+            if (err) id = req.query.id
+            else id = decoded.id;
+        })
+        if(!id)
+            return res.json({erro: "Faça seu login!"})
+
+        senha = await User.findOne({_id: id}).then((user)=>{
+            return user.senha
+        }).catch(()=>{
+            res.json({erros: "Erro ao encontrar usuario!"})
+        })
+
+        if(erros.length > 0){
+            res.json({erros: erros})
+        }
+        else{
+            await bcrypt.compare(antiga_senha, senha, (erro, result)=>{
+                if (result == true) {
+                    bcrypt.genSalt(10, (erro,salt)=>{
+                        bcrypt.hash(nova_senha, salt, (erro,hash)=>{
+                            if(erro){
+                                res.json("Erro")
+                            }else{
+                                // Definindo Filtro e o Update
+                                filter = {_id: id}
+                                update = {
+                                    senha: hash
+                                }
+
+                                // Editando User
+                                let userUpdated = User.findOneAndUpdate(filter, update, {
+                                    new: true
+                                }).then(()=>{
+                                    res.json({acerto: "Nova senha cadastrada com sucesso!"})
+                                })
+                            }
+                        })
+                    })
+
+                }
+                else {
+                    erros.push({ texto: "Senha inválida!" })
+                    return res.status(500).json({"verificacao": "Negada", erros: erros})
+                }
+            })
+        }
     }
+
+   
 }
