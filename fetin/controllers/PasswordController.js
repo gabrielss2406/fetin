@@ -3,6 +3,7 @@ require("../models/Usuario");
 const User = mongoose.model("usuarios");
 const nodemailer = require("nodemailer");
 var crypto = require('crypto');
+const bcrypt = require("bcryptjs");
 
 module.exports = {
     async forgotPass(req,res){
@@ -27,13 +28,13 @@ module.exports = {
                         var transporter = nodemailer.createTransport({
                             service: 'gmail',
                             auth: {
-                            user: 'xicop.guimaraes@gmail.com',
-                            pass: '1594875xico'
+                            user: 'WerkServicosDomesticos@gmail.com',
+                            pass: 'werksd21'
                             }
                         });
                         
                         var mailOptions = {
-                            from: 'gabrielss2406@gmail.com',
+                            from: 'francisco.pereira@get.inatel.br',
                             to: email,
                             subject: 'Reset Password',
                             text: 'http://localhost:3000/reset/?token='+token
@@ -84,7 +85,7 @@ module.exports = {
                 erros.push({texto: "As senhas são diferentes, tente novamente!"})
 
         // Busca User com o Token em prazo
-        User = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).then((user)=>{
+        usuario = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).then((user)=>{
             if(user!=null)
                 return user._id
             else
@@ -103,7 +104,7 @@ module.exports = {
                         res.json("Erro")
                     }else{
                         // Definindo Filtro e o Update
-                        filter = {_id: User}
+                        filter = {_id: usuario}
                         update = {
                             senha: hash
                         }
