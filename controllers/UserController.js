@@ -3,15 +3,24 @@ require("../models/Usuario");
 const User = mongoose.model("usuarios");
 const bcrypt = require("bcryptjs");
 const cpfVerify = require('cpf');
+const nodemailer = require("nodemailer");
+var crypto = require('crypto');
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
 
 module.exports = {
     async register(req,res) {
-        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2} = req.body;
+        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2, trabalhador} = req.body;
+        var {pais,estado,cidade,bairro} = req.body
+        var {tipo,descricao} = req.body
         
+        // Verificações
         var erros = []
+            // CPF
+            if(!cpfVerify.isValid(cpf))
+                erros.push({texto: "CPF inválido!"})
+            // Campos User Default
             if(!nome || typeof nome == undefined || nome == null)
                 erros.push({texto: "Nome inválido!"})
             if(!email || typeof email == undefined || email == null)
@@ -26,19 +35,24 @@ module.exports = {
                 erros.push({texto: "Telefone inválido!"})
             if(!idade || typeof idade != "number" || idade == null || idade<12)
                 erros.push({texto: "Idade inválido!"})
-            
-            if(!cpfVerify.isValid(cpf))
-                erros.push({texto: "CPF inválido!"})
+            // Endereços
+            if(!pais || typeof pais == undefined || pais == null)
+                erros.push({texto: "País inválido!"})
+            if(!estado || typeof estado == undefined || estado == null)
+                erros.push({texto: "Estado inválido!"})
+            if(!cidade || typeof cidade == undefined || cidade == null)
+                erros.push({texto: "Cidade inválido!"})
+            // Trabalhador
+            if(e_trabalhador==1 && (!tipo || typeof tipo == undefined || tipo == null))
+                erros.push({texto: "Tipo de trabalhador inválido!"})
 
             await User.findOne({cpf: cpf}).then((user)=>{
                 if(user)
                     erros.push({texto: "CPF já cadastrado!"})
-                else{
-                    User.findOne({email: email}).then((user)=>{
-                        if(user)
-                            erros.push({texto: "Email já cadastrado!"})
-                    })
-                }
+            })
+            await User.findOne({email: email}).then((user)=>{
+                if(user)
+                    erros.push({texto: "Email já cadastrado!"})
             })
             
         
@@ -53,7 +67,17 @@ module.exports = {
                 email: email,
                 telefone: telefone,
                 idade: idade,
-                senha: senha
+                senha: senha,
+                endereco:{
+                    pais: pais,
+                    estado: estado,
+                    cidade: cidade,
+                    bairro: bairro
+                },
+                trabalhador:{
+                    tipo: tipo,
+                    descricao: descricao
+                }
             })
 
             bcrypt.genSalt(10, (erro,salt)=>{
@@ -63,9 +87,11 @@ module.exports = {
                     }else{
                         newUser.senha = hash
                         newUser.save().then(()=>{
-                            return res.status(500).json({acerto:"certo"})
+                            return res.status(200).json({acerto:"certo"})
                         }).catch((err)=>{
-                            return res.status(500).json({acerto:"errado"})
+                            console.log(newUser)
+                            console.log(err)
+                            return res.status(500).json(err)
                         })
                     }
                 })
@@ -95,14 +121,14 @@ module.exports = {
                         if (result == true) {
                             const id = user._id;
                             const token = jwt.sign({ id }, process.env.SECRET, {
-                                expiresIn: 300 // expires in 5min
+                                expiresIn: 600 // expires in 10min
                             });
-                            res.cookie("token", token)
+                            res.cookie("werk.auth", token, { maxAge: 900000, httpOnly: true })
                             return res.json({ auth: true, token: token });
                         }
                         else {
                             erros.push({ texto: "Senha inválida!" })
-                            return res.status(500).json({"verificacao": "Negada", erros: erros})
+                            return res.json({"verificacao": "Negada", erros: erros})
                         }
                     })
                 }
@@ -114,7 +140,7 @@ module.exports = {
         }
     },
     async logout(req,res){
-        res.clearCookie('token');
+        res.clearCookie('werk.auth');
         res.json({ auth: false, token: null });
     }
 }
