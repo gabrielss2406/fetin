@@ -39,6 +39,11 @@ const Usuarios = new Schema({
         require: true
     },
 
+    foto: {
+        type: String,
+        require: false
+    },
+
     endereco:{
         pais:{
             type: String,
