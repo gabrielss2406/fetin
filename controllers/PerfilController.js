@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
 const User = mongoose.model("usuarios");
+const bcrypt = require("bcryptjs");
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
@@ -10,7 +11,7 @@ module.exports = {
         var id
 
         // Pegando id via token ou query
-        const token = req.headers['werk.auth'];
+        const token = req.cookies.token;
         if(!req.query.id){
             jwt.verify(token, process.env.SECRET, function(err, decoded) {
                 if (err) id = req.query.id
@@ -36,7 +37,7 @@ module.exports = {
         // Pegando valores
             var id
             // Pegando id via token
-            const token = req.headers['werk.auth'];
+            const token = req.cookies.token;
             if(token){
                 jwt.verify(token, process.env.SECRET, function(err, decoded) {
                     if (err) id = 0
@@ -49,7 +50,7 @@ module.exports = {
                 res.status(500).json({erro: "Sem user logado."})
             }
 
-        var {nome,email,telefone,idade} = req.body
+        var {nome,email,telefone,idade, foto} = req.body
         var {pais,estado,cidade,bairro} = req.body
         var {tipo,descricao} = req.body
 
@@ -60,6 +61,7 @@ module.exports = {
             email:email,
             telefone:telefone,
             idade:idade,
+            foto: foto,
             endereco:{
                 pais: pais,
                 estado: estado,
@@ -75,12 +77,8 @@ module.exports = {
         // Editando User
         let userUpdated = await User.findOneAndUpdate(filter, update, {
             new: true
-        });
+        })
 
-        return res.json(userUpdated);
-    },
-
-    async editSenha(req,res){
-        return 0;
+        return res.json(userUpdated)
     }
 }

@@ -3,15 +3,13 @@ require("../models/Usuario");
 const User = mongoose.model("usuarios");
 const bcrypt = require("bcryptjs");
 const cpfVerify = require('cpf');
-const nodemailer = require("nodemailer");
-var crypto = require('crypto');
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
 
 module.exports = {
     async register(req,res) {
-        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2, trabalhador} = req.body;
+        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2, foto} = req.body;
         var {pais,estado,cidade,bairro} = req.body
         var {tipo,descricao} = req.body
         
@@ -68,6 +66,7 @@ module.exports = {
                 telefone: telefone,
                 idade: idade,
                 senha: senha,
+                foto: foto,
                 endereco:{
                     pais: pais,
                     estado: estado,
@@ -121,14 +120,14 @@ module.exports = {
                         if (result == true) {
                             const id = user._id;
                             const token = jwt.sign({ id }, process.env.SECRET, {
-                                expiresIn: 600 // expires in 10min
+                                expiresIn: 300 // expires in 5min
                             });
-                            res.cookie("werk.auth", token, { maxAge: 900000, httpOnly: true })
+                            res.cookie("token", token)
                             return res.json({ auth: true, token: token });
                         }
                         else {
                             erros.push({ texto: "Senha inválida!" })
-                            return res.json({"verificacao": "Negada", erros: erros})
+                            return res.status(500).json({"verificacao": "Negada", erros: erros})
                         }
                     })
                 }
@@ -140,7 +139,7 @@ module.exports = {
         }
     },
     async logout(req,res){
-        res.clearCookie('werk.auth');
+        res.clearCookie('token');
         res.json({ auth: false, token: null });
-    }
+    },
 }
