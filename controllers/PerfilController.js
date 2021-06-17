@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
 const User = mongoose.model("usuarios");
-const bcrypt = require("bcryptjs");
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
@@ -11,7 +10,7 @@ module.exports = {
         var id
 
         // Pegando id via token ou query
-        const token = req.cookies.token;
+        const token = req.headers['werk.auth'];
         if(!req.query.id){
             jwt.verify(token, process.env.SECRET, function(err, decoded) {
                 if (err) id = req.query.id
@@ -25,7 +24,7 @@ module.exports = {
         }
 
         // Pesquisando perfil do User
-        await User.findOne({_id: id}).select('nome e_trabalhador email telefone idade endereco.pais endereco.estado endereco.cidade endereco.bairro trabalhador.tipo trabalhador.avaliacao trabalhador.qnt_servicos trabalhador.descricao -_id').then((user)=>{
+        await User.findOne({_id: id}).select('nome e_trabalhador email telefone idade foto endereco.pais endereco.estado endereco.cidade endereco.bairro trabalhador.tipo trabalhador.avaliacao trabalhador.qnt_servicos trabalhador.descricao -_id').then((user)=>{
                 return res.json(user)
             }
         ).catch((err)=>{
@@ -37,7 +36,7 @@ module.exports = {
         // Pegando valores
             var id
             // Pegando id via token
-            const token = req.cookies.token;
+            const token = req.headers['werk.auth'];
             if(token){
                 jwt.verify(token, process.env.SECRET, function(err, decoded) {
                     if (err) id = 0
@@ -50,7 +49,7 @@ module.exports = {
                 res.status(500).json({erro: "Sem user logado."})
             }
 
-        var {nome,email,telefone,idade, foto} = req.body
+        var {nome,email,telefone,idade,foto} = req.body
         var {pais,estado,cidade,bairro} = req.body
         var {tipo,descricao} = req.body
 
@@ -61,7 +60,7 @@ module.exports = {
             email:email,
             telefone:telefone,
             idade:idade,
-            foto: foto,
+            foto:foto,
             endereco:{
                 pais: pais,
                 estado: estado,
@@ -77,8 +76,12 @@ module.exports = {
         // Editando User
         let userUpdated = await User.findOneAndUpdate(filter, update, {
             new: true
-        })
+        });
 
-        return res.json(userUpdated)
+        return res.json(userUpdated);
+    },
+
+    async editSenha(req,res){
+        return 0;
     }
 }

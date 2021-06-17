@@ -3,16 +3,18 @@ require("../models/Usuario");
 const User = mongoose.model("usuarios");
 const bcrypt = require("bcryptjs");
 const cpfVerify = require('cpf');
+const nodemailer = require("nodemailer");
+var crypto = require('crypto');
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
 
 module.exports = {
     async register(req,res) {
-        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2, foto} = req.body;
+        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2,foto} = req.body;
         var {pais,estado,cidade,bairro} = req.body
         var {tipo,descricao} = req.body
-        
+
         // Verificações
         var erros = []
             // CPF
@@ -52,8 +54,8 @@ module.exports = {
                 if(user)
                     erros.push({texto: "Email já cadastrado!"})
             })
-            
-        
+
+
         if(erros.length > 0){
             res.json({erros: erros})
         }
@@ -100,14 +102,14 @@ module.exports = {
 
     async login(req,res) {
         var {email, senha} = req.body
-    
+
         var erros = []
-        
+
         if(!email || typeof email == undefined || email == null){
             erros.push({texto: "É necessario o email!"})}
         if(!senha || typeof senha == undefined || senha == null || senha.length < 7){ 
             erros.push({texto: "A senha é necessaria!"})}
-        
+
         if(erros.length > 0){
             res.json({erros: erros})
         }
@@ -120,14 +122,14 @@ module.exports = {
                         if (result == true) {
                             const id = user._id;
                             const token = jwt.sign({ id }, process.env.SECRET, {
-                                expiresIn: 300 // expires in 5min
+                                expiresIn: 600 // expires in 10min
                             });
-                            res.cookie("token", token)
+                            res.cookie("werk.auth", token, { maxAge: 900000, httpOnly: true })
                             return res.json({ auth: true, token: token });
                         }
                         else {
                             erros.push({ texto: "Senha inválida!" })
-                            return res.status(500).json({"verificacao": "Negada", erros: erros})
+                            return res.json({"verificacao": "Negada", erros: erros})
                         }
                     })
                 }
@@ -138,8 +140,9 @@ module.exports = {
             })
         }
     },
+    
     async logout(req,res){
-        res.clearCookie('token');
+        res.clearCookie('werk.auth');
         res.json({ auth: false, token: null });
-    },
+    }
 }
