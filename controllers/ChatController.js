@@ -80,7 +80,7 @@ module.exports = {
         if(censored)
           await Message.remove({_id: censored.id})
         else
-          io.emit('message', req.body);
+          io.emit('message', req.body)
         res.sendStatus(200);*/
   },
 
