@@ -10,7 +10,7 @@ module.exports = {
         var id
 
         // Pegando id via token ou query
-        const token = req.headers['werk.auth'];
+        const token = req.cookies["werk.auth"];
         if(!req.query.id){
             jwt.verify(token, process.env.SECRET, function(err, decoded) {
                 if (err) id = req.query.id
@@ -24,7 +24,7 @@ module.exports = {
         }
 
         // Pesquisando perfil do User
-        await User.findOne({_id: id}).select('nome e_trabalhador email telefone idade foto endereco.pais endereco.estado endereco.cidade endereco.bairro trabalhador.tipo trabalhador.avaliacao trabalhador.qnt_servicos trabalhador.descricao -_id').then((user)=>{
+        await User.findOne({_id: id}).select('nome e_trabalhador email telefone idade foto endereco.pais endereco.estado endereco.cidade endereco.bairro trabalhador.tipos trabalhador.avaliacao trabalhador.qnt_servicos trabalhador.descricao -_id').then((user)=>{
                 return res.json(user)
             }
         ).catch((err)=>{
@@ -36,7 +36,7 @@ module.exports = {
         // Pegando valores
             var id
             // Pegando id via token
-            const token = req.headers['werk.auth'];
+            const token = req.cookies["werk.auth"];
             if(token){
                 jwt.verify(token, process.env.SECRET, function(err, decoded) {
                     if (err) id = 0

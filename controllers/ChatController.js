@@ -12,14 +12,14 @@ module.exports = {
     var userLogged
 
     // Pegando id via token
-    const token = req.headers['werk.auth'] || req.cookies["werk.auth"];
+    const token = req.cookies["werk.auth"] || req.cookies["werk.auth"];
     if(token){
         jwt.verify(token, process.env.SECRET, function(err, decoded) {
             if (err) userLogged = 0
             else userLogged = decoded.id;
         });
         if(userLogged==0){
-            res.status(500).json({erro: "Erro ao editar o usuário"})
+            res.status(500).json({erro: "Erro!"})
         }
     }else{
         return res.status(500).json({erro: "Sem usuário logado"})
@@ -48,7 +48,7 @@ module.exports = {
     var userLogged
 
     // Pegando id via token
-    const token = req.headers['werk.auth'] || req.cookies["werk.auth"];
+    const token = req.cookies["werk.auth"] || req.cookies["werk.auth"];
     if(token){
         jwt.verify(token, process.env.SECRET, function(err, decoded) {
             if (err) userLogged = 0
@@ -88,7 +88,7 @@ module.exports = {
     var userLogged
 
     // Pegando id via token
-    const token = req.headers['werk.auth'] || req.cookies["werk.auth"];
+    const token = req.cookies["werk.auth"] || req.cookies["werk.auth"];
     if(token){
         jwt.verify(token, process.env.SECRET, function(err, decoded) {
             if (err) userLogged = 0

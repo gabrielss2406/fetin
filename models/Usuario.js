@@ -66,8 +66,8 @@ const Usuarios = new Schema({
     },
     
     trabalhador: {
-        tipo:{
-            type: String,
+        tipos:{
+            type: Array,
             require: false
         },
     

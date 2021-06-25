@@ -5,6 +5,9 @@ const nodemailer = require("nodemailer");
 var crypto = require('crypto');
 const bcrypt = require("bcryptjs");
 
+require("dotenv-safe").config();
+const jwt = require('jsonwebtoken');
+
 module.exports = {
     async forgotPass(req,res){
             
@@ -44,7 +47,7 @@ module.exports = {
                             if (error) {
                                 return res.status(500).json(error)
                             } else {
-                                return res.status(200).json()
+                                return res.status(200).json({email: "Enviado"})
                             }
                         });
 
@@ -126,7 +129,6 @@ module.exports = {
 
     async editSenha(req,res){
         var erros = []
-        const token = req.cookies.token;
         const {antiga_senha, nova_senha, nova_senha2} = req.body
 
         if(!antiga_senha || typeof antiga_senha == undefined || antiga_senha == null || antiga_senha.length < 7)
@@ -136,12 +138,19 @@ module.exports = {
         if(nova_senha != nova_senha2)
                 erros.push({texto: "As senhas são diferentes, tente novamente!"})
 
-        jwt.verify(token, process.env.SECRET, function(err, decoded) {
-            if (err) id = req.query.id
-            else id = decoded.id;
-        })
-        if(!id)
-            return res.json({erro: "Faça seu login!"})
+        // Pegando id via token
+        const token = req.cookies["werk.auth"];
+        if(token){
+            jwt.verify(token, process.env.SECRET, function(err, decoded) {
+                if (err) id = 0
+                else id = decoded.id;
+            });
+            if(id==0){
+                res.status(500).json({erro: "Erro ao editar o usuário"})
+            }
+        }else{
+            res.status(500).json({erro: "Sem user logado."})
+        }
 
         senha = await User.findOne({_id: id}).then((user)=>{
             return user.senha

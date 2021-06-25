@@ -13,7 +13,7 @@ module.exports = {
     async register(req,res) {
         var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2,foto} = req.body;
         var {pais,estado,cidade,bairro} = req.body
-        var {tipo,descricao} = req.body
+        var {tipos,descricao} = req.body
 
         // Verificações
         var erros = []
@@ -43,7 +43,7 @@ module.exports = {
             if(!cidade || typeof cidade == undefined || cidade == null)
                 erros.push({texto: "Cidade inválido!"})
             // Trabalhador
-            if(e_trabalhador==1 && (!tipo || typeof tipo == undefined || tipo == null))
+            if(e_trabalhador==1 && (!tipos || typeof tipos == undefined || tipos == null))
                 erros.push({texto: "Tipo de trabalhador inválido!"})
 
             await User.findOne({cpf: cpf}).then((user)=>{
@@ -54,7 +54,20 @@ module.exports = {
                 if(user)
                     erros.push({texto: "Email já cadastrado!"})
             })
+            
+            Tipos = ["Limpeza", "Encanador", "Eletricista", "Pedreiro", "Mestre de obras"]
 
+            await tipos.forEach((tipo) => {
+                var tipo_valido = 0
+                Tipos.forEach((Tipo)=>{
+                    if(tipo == Tipo){
+                        tipo_valido = 1
+                    }
+                })
+                if(tipo_valido == 0){
+                    erros.push({texto: "Tipos invalidos"})
+                }
+            })
 
         if(erros.length > 0){
             res.json({erros: erros})
@@ -76,7 +89,7 @@ module.exports = {
                     bairro: bairro
                 },
                 trabalhador:{
-                    tipo: tipo,
+                    tipos: tipos,
                     descricao: descricao
                 }
             })
@@ -98,6 +111,11 @@ module.exports = {
                 })
             })
         }
+    },
+
+    async tipo_trabalhador(req, res){
+        Tipos = ["Limpeza", "Encanador", "Eletricista", "Pedreiro", "Mestre de obras"]
+        res.json({tipos: Tipos})
     },
 
     async login(req,res) {
