@@ -11,12 +11,15 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
     async register(req,res) {
-        var {nome,cpf,e_trabalhador,email,telefone,idade,senha,senha2,foto} = req.body;
+        var {nome,cpf,e_trabalhador,email,telefone,data_nasc,senha,senha2,foto} = req.body;
         var {pais,estado,cidade,bairro} = req.body
         var {tipos,descricao} = req.body
 
+        telefone = telefone.replace(/-| |[(]|[)]|[+]+[0-9][0-9]/gi, "")
+
         // Verificações
         var erros = []
+
             // CPF
             if(!cpfVerify.isValid(cpf))
                 erros.push({texto: "CPF inválido!"})
@@ -31,16 +34,18 @@ module.exports = {
                 erros.push({texto: "As senhas são diferentes, tente novamente!"})
             if(e_trabalhador!=0 && e_trabalhador!=1)
                 erros.push({texto: "Campo inválido!"})
-            if(!telefone || typeof telefone != "number" || telefone == null)
+            if(!telefone || telefone.search(/[a-z]/) != -1 || telefone == null)
                 erros.push({texto: "Telefone inválido!"})
-            if(!idade || typeof idade != "number" || idade == null || idade<12)
-                erros.push({texto: "Idade inválido!"})
+            if(!data_nasc ||data_nasc == null)
+                erros.push({texto: "Data de nascimento inválida!"})
             // Endereços
             if(!pais || typeof pais == undefined || pais == null)
                 erros.push({texto: "País inválido!"})
             if(!estado || typeof estado == undefined || estado == null)
                 erros.push({texto: "Estado inválido!"})
             if(!cidade || typeof cidade == undefined || cidade == null)
+                erros.push({texto: "Cidade inválido!"})
+            if(!bairro || typeof bairro == undefined || bairro == null)
                 erros.push({texto: "Cidade inválido!"})
             // Trabalhador
             if(e_trabalhador==1 && (!tipos || typeof tipos == undefined || tipos == null))
@@ -65,7 +70,7 @@ module.exports = {
                     }
                 })
                 if(tipo_valido == 0){
-                    erros.push({texto: "Tipos invalidos"})
+                    erros.push({texto: "Esse tipo de trabalho ainda não está disponivel"})
                 }
             })
 
@@ -79,7 +84,7 @@ module.exports = {
                 e_trabalhador: e_trabalhador,
                 email: email,
                 telefone: telefone,
-                idade: idade,
+                data_nasc: data_nasc,
                 senha: senha,
                 foto: foto,
                 endereco:{
@@ -101,10 +106,8 @@ module.exports = {
                     }else{
                         newUser.senha = hash
                         newUser.save().then(()=>{
-                            return res.status(200).json({acerto:"certo"})
+                            return res.status(200).json({acerto:"Usuario cadastrado com sucesso!"})
                         }).catch((err)=>{
-                            console.log(newUser)
-                            console.log(err)
                             return res.status(500).json(err)
                         })
                     }

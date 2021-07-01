@@ -66,15 +66,14 @@ module.exports = {
         var {token} = req.query
 
         // Busca User com o Token em prazo
-        await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).then((user)=>{
+        await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).select('nome email').then((user)=>{
             if(user!=null)
                 return res.json({user})
             else
-                return res.json("erro")
+                return res.json("Erro ao validar link!")
         }).catch((err)=>{
             return res.json({err})
         })
-        
     },
 
     async nova_senha(req, res){
@@ -85,7 +84,7 @@ module.exports = {
         if(!nova_senha || typeof nova_senha == undefined || nova_senha == null || nova_senha.length < 7)
                 erros.push({texto: "Nova senha inválida!"})
         if(nova_senha != nova_senha2)
-                erros.push({texto: "As senhas são diferentes, tente novamente!"})
+                erros.push({texto: "Senhas diferentes!"})
 
         // Busca User com o Token em prazo
         usuario = await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).then((user)=>{
@@ -118,7 +117,7 @@ module.exports = {
                         }).then(()=>{
                             res.json({acerto: "Nova senha cadastrada com sucesso!"})
                         }).catch(()=>{
-                            erros.push({texto: "Email não cadastrado!"})
+                            erros.push({texto: "Usuario não encontrado!"})
                             res.json({erros: erros})
                         })
                     }

@@ -29,8 +29,8 @@ const Usuarios = new Schema({
         require: true
     },
 
-    idade:{
-        type: Number,
+    data_nasc:{
+        type: String,
         require: true
     }, 
 

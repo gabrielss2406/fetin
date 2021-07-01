@@ -26,12 +26,12 @@ module.exports = {
                 Users = User.find({"endereco.cidade": user.endereco.cidade, e_trabalhador: 1, _id: {$nin: [id]} }).then((Users)=>{
                     return Users
                 }).catch(()=>{
-                    res.json({erro: "Não há trabalhadores desse tipo perto  de você!"})
+                    res.json({erro: "Erro ao encontrar algum usuario perto de você!"})
                 })
                 return Users
 
             }).catch(()=>{
-                res.json({erro: "Seu endereco não foi encontrado"})
+                res.json({erro: "Erro ao procurar endereço do usuario!"})
             })
 
             await usuarios.forEach((usuario)=>{

@@ -4,7 +4,14 @@ const Schema = mongoose.Schema
 const Comentario = new Schema({
     id_usuario: {
         type: Schema.Types.ObjectId,
-        ref: "usuarios"
+        ref: "usuarios",
+        require: true
+    },
+
+    id_trabalhador:{
+        type: Schema.Types.ObjectId,
+        ref: "usuarios",
+        require: true
     },
 
     titulo: {

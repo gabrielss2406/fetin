@@ -19,6 +19,7 @@
     
     router.post("/recuperarSenha", PasswordController.forgotPass)
     router.get("/reset", PasswordController.reset)
+    router.post("/reset", PasswordController.nova_senha)
     router.post("/editarSenha", PasswordController.editSenha)
 
     router.get("/perfil", PerfilController.index);
