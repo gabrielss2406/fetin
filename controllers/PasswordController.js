@@ -40,7 +40,7 @@ module.exports = {
                             from: 'francisco.pereira@get.inatel.br',
                             to: email,
                             subject: 'Reset Password',
-                            text: 'http://localhost:3000/reset/?token='+token
+                            text: 'http://localhost:3002/reset?token='+token
                         };
 
                         transporter.sendMail(mailOptions, function(error, info){
@@ -68,9 +68,9 @@ module.exports = {
         // Busca User com o Token em prazo
         await User.findOne({ resetPasswordToken: token, resetPasswordExpires: { $gt: Date.now() } }).select('nome email').then((user)=>{
             if(user!=null)
-                return res.json({user})
+                return res.json({auth : true})
             else
-                return res.json("Erro ao validar link!")
+                return res.json({auth : false})
         }).catch((err)=>{
             return res.json({err})
         })

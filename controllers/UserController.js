@@ -60,19 +60,22 @@ module.exports = {
                     erros.push({texto: "Email já cadastrado!"})
             })
             
-            Tipos = ["Limpeza", "Encanador", "Eletricista", "Pedreiro", "Mestre de obras"]
+            if(e_trabalhador==1){
+                Tipos = ["Limpeza", "Encanador", "Eletricista", "Pedreiro", "Mestre de obras"]
 
-            await tipos.forEach((tipo) => {
-                var tipo_valido = 0
-                Tipos.forEach((Tipo)=>{
-                    if(tipo == Tipo){
-                        tipo_valido = 1
+                await tipos.forEach((tipo) => {
+                    var tipo_valido = 0
+                    Tipos.forEach((Tipo)=>{
+                        if(tipo == Tipo){
+                            tipo_valido = 1
+                        }
+                    })
+                    if(tipo_valido == 0){
+                        erros.push({texto: "Esse tipo de trabalho ainda não está disponivel"})
                     }
                 })
-                if(tipo_valido == 0){
-                    erros.push({texto: "Esse tipo de trabalho ainda não está disponivel"})
-                }
-            })
+            }
+            
 
         if(erros.length > 0){
             res.json({erros: erros})

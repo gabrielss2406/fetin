@@ -7,6 +7,7 @@
     const BuscaController = require('../controllers/BuscaController');
     const PasswordController = require('../controllers/PasswordController');
     const ChatController = require('../controllers/ChatController');
+    const RelacaoController = require('../controllers/RelacaoController');
 
     const verifyJWT = require("../helpers/verifyJWT")
 // Rotas
@@ -28,8 +29,14 @@
     router.post("/buscar",verifyJWT,BuscaController.buscar)
     router.get("/buscar",verifyJWT,BuscaController.buscar)
 
-    router.get("/chat",verifyJWT,ChatController.show);
+    router.get("/chat",verifyJWT,ChatController.show)
     router.get("/chat/:id",verifyJWT,ChatController.showPv)
     router.post("/chat/:id",verifyJWT,ChatController.add)
+
+    router.post("/enviarelacao",verifyJWT,RelacaoController.send)
+    router.post("/enviarelacao/aceitar",verifyJWT,RelacaoController.accept)
+    router.post("/enviarelacao/recusar",verifyJWT,RelacaoController.refuse)
+    router.post("",verifyJWT,RelacaoController.sendIndex)
+    router.get("/historico/:id",verifyJWT,RelacaoController.history)
 
 module.exports = router;
