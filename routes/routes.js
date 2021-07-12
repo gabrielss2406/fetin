@@ -9,12 +9,13 @@
     const ChatController = require('../controllers/ChatController');
     const RelacaoController = require('../controllers/RelacaoController');
 
-    const verifyJWT = require("../helpers/verifyJWT")
+    const verifyJWT = require("../helpers/verifyJWT");
+    const verifyTBR = require("../helpers/verifyTRB");
 // Rotas
     router.get(("/"),(req,res) =>{res.json({numero: 11,texto: "Hello World!"});});
 
     router.post("/registrar", UserController.register)
-    router.get("/registrar", UserController.tipo_trabalhador)
+    router.get("/registrar", UserController.tipo_trabalhador) // analisar
     router.post("/login", UserController.login)
     router.post("/logout", UserController.logout)
     
@@ -33,10 +34,11 @@
     router.get("/chat/:id",verifyJWT,ChatController.showPv)
     router.post("/chat/:id",verifyJWT,ChatController.add)
 
-    router.post("/enviarelacao",verifyJWT,RelacaoController.send)
-    router.post("/enviarelacao/aceitar",verifyJWT,RelacaoController.accept)
-    router.post("/enviarelacao/recusar",verifyJWT,RelacaoController.refuse)
-    router.post("",verifyJWT,RelacaoController.sendIndex)
-    router.get("/historico/:id",verifyJWT,RelacaoController.history)
+    router.post("/enviarelacao",verifyJWT,RelacaoController.send) // cliente -> trabalhador
+    router.post("/enviarelacao/aceitar",verifyTBR,RelacaoController.accept) // trabalhador
+    router.post("/enviarelacao/recusar",verifyTBR,RelacaoController.refuse) // trabalhador
+    router.get("/relacoes",verifyTBR,RelacaoController.sendIndex) // trabalhador vizualiza
+    router.get("/historico/:id",verifyJWT,RelacaoController.history) // historico aceitas
+    router.get("/avaliacao/:id",RelacaoController.avaliacao) // media avaliacao
 
 module.exports = router;
