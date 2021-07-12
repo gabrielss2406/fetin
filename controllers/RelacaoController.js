@@ -8,6 +8,7 @@ require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
 
 module.exports = {
+    // Usuario envia
     async send(req,res){
         
         var id_cliente
@@ -45,7 +46,6 @@ module.exports = {
     // Mostra para o trabalhador aceitar
     async sendIndex(req,res){
         var id
-        var e_trabalhador
 
         // id_trabalhador (logado)
         var token = req.cookies["werk.auth"]
@@ -60,38 +60,20 @@ module.exports = {
             }else{
                 res.status(500).json({erro: "Sem user logado."})
             }
-        
-        await User.findOne({_id: id}).then((data)=>{
-            e_trabalhador = data.e_trabalhador
 
-            
-            if(e_trabalhador==0){
-                Relacao.find({id_cliente: id}).select("id_trabalhador data avaliacao -_id").
-                    then((data)=>{
-                        res.json(data)
-                    }).catch((err)=>{
-                        res.json(err)
-                    })
-                //var user = await User.findOne({_id: saida.id_trabalhador})
-                res.json(saida)
-            }
-            else{
-                Relacao.find({id_cliente: id}).select("id_cliente data -_id").
-                    then((data)=>{
-                        res.json(data)
-                    }).catch((err)=>{
-                        res.json(err)
-                    })
-                // arrumar essa saida
-            }
-    
+        var populat = {
+            path: 'id_cliente',
+            select: 'nome email'
+        }
+
+        await Relacao.find({id_trabalhador: id,accept: 0}).select('id_cliente data -_id').populate(populat).then((data)=>{
+            res.json(data)
         }).catch((err)=>{
             res.json(err)
         })
-
-        
     },
 
+    // Trabalhador aceita/recusa
     async accept(req,res){
         var {id_cliente,id_trabalhador,data} = req.body
 
@@ -143,7 +125,7 @@ module.exports = {
 
         var populat = {
             path: 'id_cliente id_trabalhador',
-            select: 'nome',
+            select: 'nome -_id',
             match: {
                 _id: {
                     $ne: id
@@ -154,7 +136,24 @@ module.exports = {
                         select('data avaliacao -_id').populate(populat)
 
         res.json(historico)
-    }
+        // id == null, o proprio usuario
+    },
 
     // Média Avaliação
+    async avaliacao(req,res){
+        var {id} = req.params
+        const array1 = await Relacao.find({id_trabalhador: id}).select('avaliacao -_id');
+
+        var soma=0
+        var contador=0
+        var media
+
+        array1.forEach(element => {
+            soma += element.avaliacao
+            contador++
+        });
+        media = soma/contador
+
+        res.json(media)
+    }
 }
