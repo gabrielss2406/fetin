@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 require("../models/Usuario");
+require("../models/Comentario");
+require("../models/Relacao");
 const User = mongoose.model("usuarios");
+const Comentario = mongoose.model("comentarios");
+const Relacao = mongoose.model("relacoes")
 
 require("dotenv-safe").config();
 const jwt = require('jsonwebtoken');
@@ -9,18 +13,33 @@ module.exports = {
     async index(req,res) {
         var id
 
-        // Pegando id via token ou query
-        const token = req.cookies["werk.auth"];
-        if(!req.query.id){
-            jwt.verify(token, process.env.SECRET, function(err, decoded) {
-                if (err) id = req.query.id
-                else id = decoded.id;
-            });
-            if(!id)
-                return res.json({erro: "Entre em um perfil de outra pessoa ou faça login para ver o seu."})
+        //pegando id
+        const token = req.cookies["werk.auth"] || req.body.token
+        jwt.verify(token, process.env.SECRET, function(err, decoded) {
+            if (err) id = null
+            else id = decoded.id
+        })
+        if(id==null)
+            return res.json({erro: "Entre em um perfil de outra pessoa ou faça login para ver o seu."})
+
+        // Pesquisando perfil do User
+        console.log(id)
+        await User.findOne({_id: id}).select('nome e_trabalhador email telefone data_nasc foto endereco.pais endereco.estado endereco.cidade endereco.bairro trabalhador.tipos trabalhador.avaliacao trabalhador.qnt_servicos trabalhador.descricao').then((user)=>{
+                return res.json(user)
+            }
+        ).catch((err)=>{
+            return res.json({texto: "Usuário não encontrado!",err,id})
+        })
+    },
+
+    async Perfil(req,res) {
+        var id
+
+        if(!req.params.id){
+            return res.json({erro: "Este usuario não existe!"})
         }
         else{
-            id = req.query.id
+            id = req.params.id
         }
 
         // Pesquisando perfil do User
@@ -132,5 +151,63 @@ module.exports = {
         });
 
         return res.json(`Usuario ${userUpdated.nome} editado com sucesso!`)
+    },
+
+    async comentario(req, res){
+        // Pegando valores
+        var id
+        // Pegando id via token
+        const token = req.cookies["werk.auth"];
+        if(token){
+            jwt.verify(token, process.env.SECRET, function(err, decoded) {
+                if (err) id = 0
+                else id = decoded.id;
+            });
+            if(id==0){
+                res.status(500).json({erro: "Erro!"})
+            }
+        }else{
+            res.status(500).json({erro: "Sem user logado."})
+        }
+
+
+        const {titulo, conteudo} = req.body
+        const {id_trabalhador} = req.params
+
+        relacao = await Relacao.findOne({id_cliente: id, id_trabalhador: id_trabalhador}).then((relacao)=>{
+            console.log("entrei " + relacao)
+            console.log(id + " " + id_trabalhador)
+            return relacao
+
+
+        }).catch((err)=>{
+            res.json({erro: err})
+        })
+
+        const comentario = {
+            id_cliente: id,
+            id_trabalhador: id_trabalhador,
+            titulo: titulo,
+            conteudo: conteudo
+        }
+
+        const erros = []
+
+        if(!titulo || typeof titulo == undefined || titulo == null){
+            erros.push({erro: "É necessario um titulo!"})
+        }
+        if(!conteudo || typeof conteudo == undefined || conteudo == null){
+            erros.push({erro: "É necessario um conteudo!"})
+        }
+        
+        if(relacao != null && erros.length == 0){  
+            await new Comentario(comentario).save().then(()=>{
+                res.json({acerto: "Comentario enviado!"})
+            })
+        }
+        else{
+            erros.push({erro: "Você não pode comentar!"})
+            res.json({erros: erros})
+        }
     }
 }
