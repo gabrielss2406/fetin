@@ -21,7 +21,7 @@ const Usuarios = new Schema({
 
     date: {
         type: String,
-        default: moment().format("DD/MM/yyyy, HH:mm")
+        default: moment().format("MM/DD/yyyy, HH:mm")
     },
 
     vizualidado: {

@@ -26,6 +26,9 @@ const Relacoes = new Schema({
     avaliacao: {
         type: Number, // 1 a 5 (estrelas)
         require: true
+    },
+    descricao: {
+        type: String
     }
 })
 
